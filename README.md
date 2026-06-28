@@ -11,6 +11,8 @@ Give developers a fast way to understand and test your API without leaving your 
 
 Built by [RagRails](https://docs.ragrails.com).
 
+If you find this useful, please [star the repo](https://github.com/ragrails/api-playground).
+
 ## Features
 
 - **Embeddable API tester**: add an interactive playground to docs, portals, and internal tools.
