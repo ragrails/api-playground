@@ -1,13 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Card, CodeBlock, Icon } from '@/components/ui';
 import { ApiConsole } from './ApiConsole';
 import { parseCurl } from './curl';
 import { ImportCard } from './ImportCard';
 import { RequestSnippet } from './RequestSnippet';
+import { formatJsonIfPossible } from './format';
 import { generateSnippet } from './snippets';
 import type { WidgetRequest } from './types';
 
 type ApiPlaygroundPanel = 'idle' | 'console' | 'import';
+type RenderedPanel = 'snippet' | 'console' | 'import' | 'invalid';
 
 export type ApiPlaygroundMode = 'dark' | 'light' | 'system';
 
@@ -93,6 +95,78 @@ const InvalidRequest: React.FC<{
   </Card>
 );
 
+const PANEL_TRANSITION_MS = 240;
+
+const PanelTransition: React.FC<{
+  panelKey: RenderedPanel;
+  children: React.ReactNode;
+}> = ({ panelKey, children }) => {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const previousPanelRef = useRef(panelKey);
+  const lastHeightRef = useRef<number | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
+  const [isClipped, setIsClipped] = useState(false);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    const inner = innerRef.current;
+    if (!outer || !inner || previousPanelRef.current === panelKey) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const startHeight = lastHeightRef.current ?? outer.getBoundingClientRect().height;
+    const endHeight = inner.getBoundingClientRect().height;
+    previousPanelRef.current = panelKey;
+    lastHeightRef.current = endHeight;
+
+    if (reduceMotion || Math.abs(startHeight - endHeight) < 1) {
+      setHeight(null);
+      setIsClipped(false);
+      return;
+    }
+
+    setIsClipped(true);
+    setHeight(startHeight);
+
+    const frame = window.requestAnimationFrame(() => {
+      setHeight(endHeight);
+    });
+    const timeout = window.setTimeout(() => {
+      setHeight(null);
+      setIsClipped(false);
+    }, PANEL_TRANSITION_MS);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [panelKey]);
+
+  useEffect(() => {
+    const inner = innerRef.current;
+    if (!inner || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      lastHeightRef.current = entry.contentRect.height;
+    });
+    observer.observe(inner);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={outerRef}
+      className="transition-[height] duration-[240ms] ease-out"
+      style={{
+        height: height === null ? undefined : `${height}px`,
+        overflow: isClipped ? 'hidden' : undefined,
+      }}
+    >
+      <div ref={innerRef}>{children}</div>
+    </div>
+  );
+};
+
 function hydrateRequest(
   request: WidgetRequest,
   title?: string,
@@ -101,7 +175,7 @@ function hydrateRequest(
   return {
     ...request,
     title: title ?? inferredTitle(request),
-    sampleResponse,
+    sampleResponse: sampleResponse ? formatJsonIfPossible(sampleResponse) : undefined,
   };
 }
 
@@ -163,36 +237,49 @@ export const ApiPlayground: React.FC<ApiPlaygroundProps> = ({
   } as React.CSSProperties;
 
   const showConsole = panel === 'console' && parsedRequest;
+  const renderedPanel: RenderedPanel =
+    panel === 'import' ? 'import' : showConsole ? 'console' : snippetRequest ? 'snippet' : 'invalid';
 
   return (
-    <div data-theme={resolvedMode} style={style} className="bg-bg text-content text-left">
-      {panel === 'import' ? (
-        <div key="import" className="motion-safe:animate-[widget-slide-in_180ms_ease-out]">
-          <ImportCard
-            onImport={importRequest}
-            onCancel={() => setPanel(parsedRequest ? 'console' : 'idle')}
-          />
+    <div data-theme={resolvedMode} style={style} className="text-content text-left">
+      <PanelTransition panelKey={renderedPanel}>
+        <div key={renderedPanel} className="motion-safe:animate-[widget-slide-in_180ms_ease-out]">
+          {panel === 'import' ? (
+            <ImportCard
+              onImport={importRequest}
+              onCancel={() => setPanel(parsedRequest ? 'console' : 'idle')}
+            />
+          ) : showConsole ? (
+            <ApiConsole
+              request={parsedRequest}
+              onRequestChange={updateRequest}
+              title={title}
+              editable={editable}
+              onBack={() => setPanel('idle')}
+              onImport={allowImport && editable ? () => setPanel('import') : undefined}
+            />
+          ) : snippetRequest ? (
+            <RequestSnippet request={snippetRequest} onTryItOut={() => setPanel('console')} />
+          ) : (
+            <InvalidRequest
+              request={snippetCurl}
+              allowImport={allowImport}
+              editable={editable}
+              onTryImport={() => setPanel('import')}
+            />
+          )}
         </div>
-      ) : showConsole ? (
-        <div key="console" className="motion-safe:animate-[widget-slide-in_180ms_ease-out]">
-          <ApiConsole
-            request={parsedRequest}
-            onRequestChange={updateRequest}
-            editable={editable}
-            onBack={() => setPanel('idle')}
-            onImport={allowImport && editable ? () => setPanel('import') : undefined}
-          />
-        </div>
-      ) : snippetRequest ? (
-        <RequestSnippet request={snippetRequest} onTryItOut={() => setPanel('console')} />
-      ) : (
-        <InvalidRequest
-          request={snippetCurl}
-          allowImport={allowImport}
-          editable={editable}
-          onTryImport={() => setPanel('import')}
-        />
-      )}
+      </PanelTransition>
+      <div className="mt-2 flex justify-end">
+        <a
+          href="https://www.npmjs.com/package/@ragrails/api-playground-react"
+          target="_blank"
+          rel="noreferrer"
+          className="text-[11px] font-medium text-muted/45 transition-colors hover:text-muted"
+        >
+          Build yours with RagRails
+        </a>
+      </div>
     </div>
   );
 };

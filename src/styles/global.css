@@ -157,7 +157,7 @@
   }
 }
 
-/* Prism syntax tokens, themed to our palette (see utils/highlight). */
+/* Syntax tokens, themed to our palette (see lib/highlight). */
 .token.comment,
 .token.prolog,
 .token.doctype,

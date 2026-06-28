@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Button, Card, CodeBlock, Icon, Tabs } from '@/components/ui';
+import { formatJsonIfPossible } from './format';
 import { SNIPPET_LANGUAGES, generateSnippet, highlightFor } from './snippets';
 import type { SnippetLanguage, WidgetRequest } from './types';
 
@@ -16,6 +17,10 @@ interface RequestSnippetProps {
 export const RequestSnippet: React.FC<RequestSnippetProps> = ({ request, onTryItOut }) => {
   const [lang, setLang] = useState<SnippetLanguage>('curl');
   const code = useMemo(() => generateSnippet(request, lang), [request, lang]);
+  const sampleResponse = useMemo(
+    () => (request.sampleResponse ? formatJsonIfPossible(request.sampleResponse) : ''),
+    [request.sampleResponse],
+  );
   const showTryButton = Boolean(onTryItOut);
 
   const selectLanguage = (id: string) => {
@@ -24,7 +29,7 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({ request, onTryIt
 
   return (
     <div className="space-y-3">
-      <Card label={request.title}>
+      <Card>
         <div className="relative flex items-center justify-between">
           <Tabs
             items={SNIPPET_LANGUAGES}
@@ -48,9 +53,9 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({ request, onTryIt
         </div>
       </Card>
 
-      {request.sampleResponse && (
+      {sampleResponse && (
         <Card label="">
-          <CodeBlock code={request.sampleResponse} language="json" />
+          <CodeBlock code={sampleResponse} language="json" />
         </Card>
       )}
     </div>

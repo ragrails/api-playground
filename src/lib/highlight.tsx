@@ -1,41 +1,150 @@
 import React from 'react';
-import Prism from 'prismjs';
-import 'prismjs/components/prism-bash';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-go';
-// javascript, markup, css, clike ship with prismjs core.
 
 export type CodeLanguage = 'json' | 'bash' | 'javascript' | 'python' | 'go' | 'plain';
 
-const grammars: Partial<Record<CodeLanguage, Prism.Grammar>> = {
-  json: Prism.languages.json,
-  bash: Prism.languages.bash,
-  javascript: Prism.languages.javascript,
-  python: Prism.languages.python,
-  go: Prism.languages.go,
-};
+type TokenType =
+  | 'comment'
+  | 'property'
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'keyword'
+  | 'function'
+  | 'builtin'
+  | 'operator'
+  | 'punctuation'
+  | 'variable';
 
-/** Recursively render a Prism token into themed <span>s (.token.<type>). */
-function renderToken(token: string | Prism.Token, key: number): React.ReactNode {
-  if (typeof token === 'string') return token;
-  const children = Array.isArray(token.content)
-    ? token.content.map((child, i) => renderToken(child, i))
-    : renderToken(token.content, 0);
-  return (
-    <span key={key} className={`token ${token.type}`}>
-      {children}
-    </span>
-  );
+interface TokenPattern {
+  type: TokenType;
+  pattern: RegExp;
 }
 
-/**
- * Tokenize a single line with Prism and render it as themed React nodes.
- * Per-line on purpose: CodeBlock owns line numbers and the staggered reveal, so
- * Prism only colors the text — numbering and animation are untouched.
- */
+const jsonPatterns: TokenPattern[] = [
+  { type: 'property', pattern: /"(?:\\.|[^"\\])*"(?=\s*:)/y },
+  { type: 'string', pattern: /"(?:\\.|[^"\\])*"/y },
+  { type: 'number', pattern: /-?\b\d+(?:\.\d+)?(?:e[+-]?\d+)?\b/iy },
+  { type: 'boolean', pattern: /\b(?:true|false)\b/y },
+  { type: 'keyword', pattern: /\bnull\b/y },
+  { type: 'operator', pattern: /:/y },
+  { type: 'punctuation', pattern: /[{}[\],]/y },
+];
+
+const bashPatterns: TokenPattern[] = [
+  { type: 'comment', pattern: /#.*/y },
+  { type: 'string', pattern: /'(?:[^']*)'|"(?:\\.|[^"\\])*"/y },
+  { type: 'function', pattern: /\b(?:curl|wget|fetch|http|httpie)\b/y },
+  { type: 'variable', pattern: /\$[A-Za-z_][\w]*|\$\{[^}]+\}/y },
+  { type: 'keyword', pattern: /\b(?:if|then|else|fi|for|do|done|while|case|esac)\b/y },
+  { type: 'number', pattern: /\b\d+(?:\.\d+)?\b/y },
+  { type: 'operator', pattern: /&&|\|\||[|&;=<>]/y },
+  { type: 'punctuation', pattern: /\\|[()[\]{}]/y },
+  { type: 'builtin', pattern: /-{1,2}[A-Za-z][\w-]*/y },
+];
+
+const javascriptPatterns: TokenPattern[] = [
+  { type: 'comment', pattern: /\/\/.*|\/\*.*?\*\//y },
+  { type: 'string', pattern: /'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`/y },
+  {
+    type: 'keyword',
+    pattern:
+      /\b(?:await|async|const|let|var|return|if|else|for|while|try|catch|throw|new|import|export|from|function|class)\b/y,
+  },
+  { type: 'boolean', pattern: /\b(?:true|false|null|undefined)\b/y },
+  { type: 'function', pattern: /\b[A-Za-z_$][\w$]*(?=\s*\()/y },
+  { type: 'number', pattern: /\b\d+(?:\.\d+)?\b/y },
+  { type: 'operator', pattern: /=>|===|!==|==|!=|<=|>=|\+\+|--|&&|\|\||[+\-*/%=<>!?:]/y },
+  { type: 'punctuation', pattern: /[()[\]{}.,;]/y },
+];
+
+const pythonPatterns: TokenPattern[] = [
+  { type: 'comment', pattern: /#.*/y },
+  { type: 'string', pattern: /'''[\s\S]*?'''|"""[\s\S]*?"""|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/y },
+  {
+    type: 'keyword',
+    pattern:
+      /\b(?:import|from|as|def|class|return|if|elif|else|for|while|try|except|with|lambda|pass|None|True|False|and|or|not|in|is)\b/y,
+  },
+  { type: 'function', pattern: /\b[A-Za-z_]\w*(?=\s*\()/y },
+  { type: 'number', pattern: /\b\d+(?:\.\d+)?\b/y },
+  { type: 'operator', pattern: /==|!=|<=|>=|:=|[+\-*/%=<>]/y },
+  { type: 'punctuation', pattern: /[()[\]{}.,:;]/y },
+];
+
+const goPatterns: TokenPattern[] = [
+  { type: 'comment', pattern: /\/\/.*|\/\*.*?\*\//y },
+  { type: 'string', pattern: /`[^`]*`|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/y },
+  {
+    type: 'keyword',
+    pattern:
+      /\b(?:package|import|func|var|const|type|struct|interface|return|if|else|for|range|go|defer|select|case|switch|default|nil|true|false)\b/y,
+  },
+  {
+    type: 'builtin',
+    pattern:
+      /\b(?:append|bool|byte|cap|close|complex64|complex128|copy|delete|error|float32|float64|int|int8|int16|int32|int64|len|make|new|panic|print|println|real|recover|rune|string|uint|uint8|uint16|uint32|uint64|uintptr)\b/y,
+  },
+  { type: 'function', pattern: /\b[A-Za-z_]\w*(?=\s*\()/y },
+  { type: 'number', pattern: /\b\d+(?:\.\d+)?\b/y },
+  { type: 'operator', pattern: /:=|==|!=|<=|>=|\+\+|--|&&|\|\||[+\-*/%=<>!&|]/y },
+  { type: 'punctuation', pattern: /[()[\]{}.,;:]/y },
+];
+
+const languagePatterns: Record<Exclude<CodeLanguage, 'plain'>, TokenPattern[]> = {
+  json: jsonPatterns,
+  bash: bashPatterns,
+  javascript: javascriptPatterns,
+  python: pythonPatterns,
+  go: goPatterns,
+};
+
+function readToken(line: string, start: number, patterns: TokenPattern[]) {
+  for (const token of patterns) {
+    token.pattern.lastIndex = start;
+    const match = token.pattern.exec(line);
+    if (match?.index === start && match[0]) {
+      return {
+        type: token.type,
+        value: match[0],
+      };
+    }
+  }
+  return null;
+}
+
+/** Tokenize a single line into themed React nodes. */
 export function highlightLine(line: string, language: CodeLanguage): React.ReactNode {
-  const grammar = language === 'plain' ? undefined : grammars[language];
-  if (!grammar || !line) return line;
-  return Prism.tokenize(line, grammar).map((token, i) => renderToken(token, i));
+  if (language === 'plain' || !line) return line;
+
+  const patterns = languagePatterns[language];
+  const nodes: React.ReactNode[] = [];
+  let buffer = '';
+  let cursor = 0;
+  let key = 0;
+
+  while (cursor < line.length) {
+    const token = readToken(line, cursor, patterns);
+
+    if (!token) {
+      buffer += line[cursor];
+      cursor += 1;
+      continue;
+    }
+
+    if (buffer) {
+      nodes.push(buffer);
+      buffer = '';
+    }
+
+    nodes.push(
+      <span key={key} className={`token ${token.type}`}>
+        {token.value}
+      </span>,
+    );
+    key += 1;
+    cursor += token.value.length;
+  }
+
+  if (buffer) nodes.push(buffer);
+  return nodes;
 }

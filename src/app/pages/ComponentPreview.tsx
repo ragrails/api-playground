@@ -20,8 +20,8 @@ import {
   TextField,
 } from '@/components/ui';
 import type { IconName } from '@/components/ui';
-import { ApiConsole, ApiPlayground, ImportCard, RequestSnippet } from '@/features/api-widget';
-import type { WidgetRequest } from '@/features/api-widget';
+import { ApiConsole, ApiPlayground, ImportCard, RequestSnippet } from '@ragrails/api-playground-react';
+import type { WidgetRequest } from '@ragrails/api-playground-react';
 import { useTheme, DEFAULT_PRIMARY } from '@/theme';
 import { cn } from '@/lib/cn';
 import type { HttpMethod } from '@/types';

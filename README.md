@@ -5,7 +5,7 @@
 [![types](https://img.shields.io/npm/types/@ragrails/api-playground-react.svg)](https://www.npmjs.com/package/@ragrails/api-playground-react)
 [![license](https://img.shields.io/npm/l/@ragrails/api-playground-react.svg)](./LICENSE)
 
-A lightweight, embeddable React API playground for interactive API docs, developer portals, SDK docs, and internal tools.
+A lightweight, embeddable React API playground by [RagRails](https://docs.ragrails.com) for interactive API docs, developer portals, SDK docs, and internal tools.
 
 Give developers a fast way to understand and test your API without leaving your docs. Add one component and get cURL-powered code snippets, a **Try it out** console, request editing, auth, cURL import, live API responses, and history.
 
@@ -109,7 +109,7 @@ export function CreatePostDocs() {
 | --- | --- | --- | --- |
 | `request` | `string` | Required | The cURL request shown and tested by the widget. |
 | `onUpdateRequest` | `(request: string) => void` | `undefined` | Receives the latest cURL request after edits or imports. |
-| `title` | `string` | inferred | Label shown above the snippet. Defaults to the request method and path. |
+| `title` | `string` | `undefined` | Optional console heading. Replaces “Try it Out” when set. |
 | `sampleResponse` | `string` | `undefined` | Example response body shown below the snippet. JSON strings are syntax-highlighted. |
 | `editable` | `boolean` | `true` | Enables or disables editing in the console. |
 | `allowImport` | `boolean` | `true` | Shows or hides the cURL import action. |

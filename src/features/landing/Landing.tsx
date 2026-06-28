@@ -1,121 +1,87 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { ApiPlayground } from '@ragrails/api-playground-react'
 import './Landing.css'
 
+const initialRequest = `curl -X POST 'https://jsonplaceholder.typicode.com/posts' \\
+  -H 'Content-Type: application/json' \\
+  -d '{ "title": "API playground", "body": "Test APIs directly inside your docs", "userId": 1 }'`
+
+const sampleResponse = `{
+  "id": 101,
+  "title": "API playground",
+  "body": "Test APIs directly inside your docs",
+  "userId": 1
+}`
+
+const features = [
+  'Embeddable API tester',
+  'cURL import',
+  'Live responses',
+  'Headers, body, and auth',
+  'Light, dark, and auto mode',
+  'No required stylesheet import',
+]
+
 function Landing() {
-  const [count, setCount] = useState(0)
+  const [request, setRequest] = useState(initialRequest)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+    <main className="demo-page">
+      <section className="demo-hero" aria-labelledby="demo-title">
+        <div className="demo-copy">
+          <div className="demo-eyebrow">React API Playground</div>
+          <h1 id="demo-title">Interactive API docs without sending users elsewhere.</h1>
+          <p className="demo-lede">
+            Add a lightweight, embeddable API tester to docs, developer portals, SDK pages,
+            and internal tools. Start from cURL, show useful snippets, and let developers try
+            requests in context.
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+          <div className="demo-actions">
+            <a href="#demo" className="demo-button demo-button-primary">
+              Try the demo
+            </a>
+            <a
+              href="https://github.com/ragrails/api-playground"
+              className="demo-button demo-button-secondary"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub
+            </a>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <div className="demo-install" aria-label="Install command">
+            <span>npm i</span>
+            <code>@ragrails/api-playground-react</code>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
+
+        <div className="demo-feature-list" aria-label="Feature highlights">
+          {features.map((feature) => (
+            <span key={feature}>{feature}</span>
+          ))}
         </div>
       </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <section id="demo" className="demo-widget" aria-label="Live API playground demo">
+        <div className="demo-section-heading">
+          <p>Live demo</p>
+          <h2>Imported from the package entry</h2>
+        </div>
+        <ApiPlayground
+          request={request}
+          onUpdateRequest={setRequest}
+          title="Create Post"
+          sampleResponse={sampleResponse}
+          mode="dark"
+          customization={{
+            primary: '#7855ff',
+            background: '#16171d',
+          }}
+        />
+      </section>
+    </main>
   )
 }
 

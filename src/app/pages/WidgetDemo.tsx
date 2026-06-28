@@ -1,6 +1,6 @@
 import React from 'react';
-import { RequestSnippet } from '@/features/api-widget';
-import type { WidgetRequest } from '@/features/api-widget';
+import { RequestSnippet } from '@ragrails/api-playground-react';
+import type { WidgetRequest } from '@ragrails/api-playground-react';
 
 const SAMPLE: WidgetRequest = {
   title: 'Get Users',
