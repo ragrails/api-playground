@@ -23,7 +23,7 @@
     "rest api",
     "api testing"
   ],
-  "homepage": "https://xendr.dev",
+  "homepage": "https://www.xendr.dev",
   "license": "MIT",
   "sideEffects": [
     "**/*.css",

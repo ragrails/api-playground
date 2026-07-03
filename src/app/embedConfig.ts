@@ -6,7 +6,7 @@ import type {
 } from '@/components/widget';
 import type { SnippetLanguage } from '@/lib/widget/types';
 
-export const EMBED_BASE_URL = 'https://xendr.dev';
+export const EMBED_BASE_URL = 'https://www.xendr.dev';
 
 export interface ApiPlaygroundEmbedConfig {
   request: string;

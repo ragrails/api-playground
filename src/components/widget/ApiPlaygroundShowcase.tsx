@@ -30,12 +30,12 @@ export function ApiPlaygroundShowcase() {
             />
           </div>
           <div className="pg-canvas-footer">
-            <a href="https://xendr.dev" target="_blank" rel="noreferrer">
+            <a href="https://www.xendr.dev" target="_blank" rel="noreferrer">
               <span>Powered by</span>
               <XendrLogo className="h-3 w-auto text-content" />
             </a>
             <span data-separator aria-hidden="true" />
-            <a href="https://xendr.dev" target="_blank" rel="noreferrer">
+            <a href="https://www.xendr.dev" target="_blank" rel="noreferrer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="14"
