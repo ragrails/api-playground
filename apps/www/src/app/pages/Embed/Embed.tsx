@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ApiPlayground } from '@/components/widget';
+import { ApiPlayground } from '@xendr/react';
 import { DEFAULT_EMBED_CONFIG, decodeEmbedConfig } from '@app/app/embedConfig';
 import './Embed.css';
 

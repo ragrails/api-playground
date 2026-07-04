@@ -1,5 +1,5 @@
-import { ApiPlayground } from '@/components/widget'
-import { XendrLogo } from '@/components/widget/XendrLogo'
+import { ApiPlayground } from '@xendr/react'
+import { XendrLogo } from '@pkg/components/widget/XendrLogo'
 import { Inspector } from './Inspector'
 import { usePlaygroundConfig } from './playground'
 

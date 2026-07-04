@@ -4,9 +4,9 @@ import type {
   ApiPlaygroundMode,
   ApiPlaygroundResponseExample,
   SnippetLanguage,
-} from '@/components/widget'
+} from '@xendr/react'
 import { embedUrl, type ApiPlaygroundEmbedConfig } from '@app/app/embedConfig'
-import { DEFAULT_SNIPPET_LANGUAGES } from '@/lib/widget/snippets'
+import { DEFAULT_SNIPPET_LANGUAGES } from '@xendr/react'
 
 export interface Preset {
   id: string

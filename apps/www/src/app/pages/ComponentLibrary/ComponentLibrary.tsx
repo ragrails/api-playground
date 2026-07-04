@@ -19,13 +19,13 @@ import {
   Tabs,
   TextField,
   Tooltip,
-} from '@/components/ui';
-import type { IconName } from '@/components/ui';
-import { ApiConsole, ApiPlayground, CodePreviewCard, ImportCard, RequestSnippet } from '@/components/widget';
-import type { WidgetRequest } from '@/components/widget';
+} from '@pkg/components/ui';
+import type { IconName } from '@pkg/components/ui';
+import { ApiConsole, ApiPlayground, CodePreviewCard, ImportCard, RequestSnippet } from '@xendr/react';
+import type { WidgetRequest } from '@xendr/react';
 import { useTheme, DEFAULT_PRIMARY } from '@app/theme';
-import { cn } from '@/lib/cn';
-import type { HttpMethod } from '@/types';
+import { cn } from '@pkg/lib/cn';
+import type { HttpMethod } from '@pkg/types';
 
 /* ── Sample data ──────────────────────────────────────────────────────────── */
 

@@ -8,7 +8,9 @@ export default defineConfig({
   base: '/',
   resolve: {
     alias: {
+      '@xendr/react': fileURLToPath(new URL('../../packages/react/src/index.ts', import.meta.url)),
       '@': fileURLToPath(new URL('../../packages/react/src', import.meta.url)),
+      '@pkg': fileURLToPath(new URL('../../packages/react/src', import.meta.url)),
       '@app': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },

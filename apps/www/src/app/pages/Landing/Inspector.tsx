@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ApiPlaygroundMode, ApiPlaygroundResponseExample } from '@/components/widget'
-import { CodeBlock, ColorField, Icon, Select, Switch, Tabs, TextField, Tooltip } from '@/components/ui'
-import type { IconName } from '@/components/ui'
-import { cn } from '@/lib/cn'
+import type { ApiPlaygroundMode, ApiPlaygroundResponseExample, SnippetLanguage } from '@xendr/react'
+import { CodeBlock, ColorField, Icon, Select, Switch, Tabs, TextField, Tooltip } from '@pkg/components/ui'
+import type { IconName } from '@pkg/components/ui'
+import { cn } from '@pkg/lib/cn'
 import type { PlaygroundConfig } from './playground'
-import { SNIPPET_LANGUAGES } from '@/lib/widget/snippets'
-import type { SnippetLanguage } from '@/lib/widget/types'
+import { SNIPPET_LANGUAGES } from '@xendr/react'
 
 const accentButton =
   'flex w-full items-center rounded-md bg-primary px-3.5 py-2.5 text-primary-contrast transition hover:brightness-95 active:scale-[1.01]'

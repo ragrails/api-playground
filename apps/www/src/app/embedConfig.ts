@@ -3,8 +3,8 @@ import type {
   ApiPlaygroundDefaultView,
   ApiPlaygroundMode,
   ApiPlaygroundResponseExample,
-} from '@/components/widget';
-import type { SnippetLanguage } from '@/lib/widget/types';
+  SnippetLanguage,
+} from '@xendr/react';
 
 export const EMBED_BASE_URL = 'https://www.xendr.dev';
 
