@@ -45,8 +45,8 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
         </div>
       )}
       <div className="overflow-auto" style={maxHeight ? { maxHeight } : undefined}>
-        <pre className="w-max min-w-full p-3 font-mono text-[14px] leading-relaxed text-content">
-          <code className="flex flex-col bg-transparent p-0 text-[14px] text-content">
+        <pre className="w-max min-w-full p-3 font-mono text-[13px] leading-relaxed text-content">
+          <code className="flex flex-col bg-transparent p-0 text-[13px] text-content">
             {lines.map((line, i) => (
               <span
                 key={i}

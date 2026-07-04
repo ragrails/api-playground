@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ApiPlaygroundMode, ApiPlaygroundResponseExample } from '@/components/widget'
 import { CodeBlock, ColorField, Icon, Select, Switch, Tabs, TextField, Tooltip } from '@/components/ui'
 import type { IconName } from '@/components/ui'
@@ -257,36 +257,89 @@ function ResponsesEditor({ cfg }: { cfg: PlaygroundConfig }) {
 }
 
 function SnippetLanguagePicker({ cfg }: { cfg: PlaygroundConfig }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
   const selected = new Set(cfg.snippetLanguages)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
   const toggle = (language: SnippetLanguage) => {
     if (selected.has(language) && cfg.snippetLanguages.length === 1) return
-    const next = selected.has(language)
-      ? cfg.snippetLanguages.filter((item) => item !== language)
-      : [...cfg.snippetLanguages, language]
+    const nextSelected = new Set(cfg.snippetLanguages)
+    if (nextSelected.has(language)) nextSelected.delete(language)
+    else nextSelected.add(language)
+    const next = SNIPPET_LANGUAGES.map((item) => item.id).filter((item) => nextSelected.has(item))
     cfg.setSnippetLanguages(next)
   }
 
+  const allSelected = cfg.snippetLanguages.length === SNIPPET_LANGUAGES.length
+  const label = allSelected
+    ? 'All languages'
+    : `${cfg.snippetLanguages.length} ${cfg.snippetLanguages.length === 1 ? 'language' : 'languages'}`
+
   return (
-    <div className="grid grid-cols-2 gap-1.5">
-      {SNIPPET_LANGUAGES.map((language) => {
-        const active = selected.has(language.id)
-        return (
-          <button
-            key={language.id}
-            type="button"
-            aria-pressed={active}
-            onClick={() => toggle(language.id)}
-            className={cn(
-              'min-h-8 rounded-md border px-2 text-left text-[12px] font-medium transition-colors',
-              active
-                ? 'border-primary bg-primary-soft text-content'
-                : 'border-border bg-surface text-muted hover:text-content',
-            )}
-          >
-            {language.label}
-          </button>
-        )
-      })}
+    <div ref={rootRef} className="relative w-full">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className="flex h-8 w-full items-center justify-between rounded-md border border-border bg-surface-2 px-2.5 text-left text-[12px] font-medium text-content outline-none transition-colors hover:bg-surface"
+      >
+        <span>{label}</span>
+        <Icon name="chevron-down" className={cn('h-4 w-4 text-muted transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full z-30 mt-1 w-[210px] overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
+          <div role="listbox" aria-multiselectable="true" className="max-h-[260px] overflow-y-auto p-1">
+            {SNIPPET_LANGUAGES.map((language) => {
+              const active = selected.has(language.id)
+              const locked = active && cfg.snippetLanguages.length === 1
+              return (
+                <button
+                  key={language.id}
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  disabled={locked}
+                  onClick={() => toggle(language.id)}
+                  className={cn(
+                    'flex w-full items-center justify-between rounded-md px-2.5 py-2 text-left text-[12px] font-medium outline-none transition-colors',
+                    active ? 'text-content' : 'text-muted hover:bg-surface-2 hover:text-content',
+                    locked && 'cursor-not-allowed opacity-70',
+                  )}
+                >
+                  <span>{language.label}</span>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'grid h-4 w-4 place-items-center rounded border transition-colors',
+                      active ? 'border-primary bg-primary text-primary-contrast' : 'border-border bg-surface-2',
+                    )}
+                  >
+                    {active && <Icon name="check" className="h-3 w-3" />}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -380,6 +433,22 @@ function Controls({ cfg, onEmbed }: { cfg: PlaygroundConfig; onEmbed: () => void
         </Row>
       </Section>
 
+      <Section title="Languages">
+        <Row
+          icon="code"
+          label="Snippets"
+          align="start"
+          hint={{
+            text: 'Controls which programming language snippets appear, preserving this order.',
+            configKey: 'snippetLanguages',
+          }}
+        >
+          <div className="w-full max-w-[210px]">
+            <SnippetLanguagePicker cfg={cfg} />
+          </div>
+        </Row>
+      </Section>
+
       <Section title="Behavior">
         <Row
           icon="magic"
@@ -412,19 +481,6 @@ function Controls({ cfg, onEmbed }: { cfg: PlaygroundConfig; onEmbed: () => void
             onChange={(checked) => cfg.setDefaultView(checked ? 'console' : 'snippet')}
           />
         </Row>
-        <Row
-          icon="code"
-          label="Languages"
-          align="start"
-          hint={{
-            text: 'Controls which programming language snippets appear, preserving this order.',
-            configKey: 'snippetLanguages',
-          }}
-        >
-          <div className="w-full max-w-[210px]">
-            <SnippetLanguagePicker cfg={cfg} />
-          </div>
-        </Row>
       </Section>
     </>
   )
@@ -436,6 +492,8 @@ function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: st
   const [target, setTarget] = useState<EmbedTarget>('react')
   const [copied, setCopied] = useState(false)
   const copyValue = target === 'iframe' ? iframeCode : code
+  const reactImportCode = "import { ApiPlayground } from '@xendr/react'"
+  const reactComponentCode = code.replace(`${reactImportCode}\n\n`, '')
 
   const copy = () =>
     navigator.clipboard?.writeText(copyValue).then(() => {
@@ -473,8 +531,11 @@ function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: st
             <Field label="1 · Install the package">
               <CodeBlock code="npm i @xendr/react" language="bash" />
             </Field>
-            <Field label="2 · Add the component">
-              <CodeBlock code={code} language="javascript" maxHeight="320px" />
+            <Field label="2 · Import the component">
+              <CodeBlock code={reactImportCode} language="javascript" />
+            </Field>
+            <Field label="3 · Add the component">
+              <CodeBlock code={reactComponentCode} language="javascript" maxHeight="270px" />
             </Field>
             <button type="button" onClick={copy} className={cn(accentButton, 'justify-center gap-2 text-[14px] font-semibold')}>
               <Icon name={copied ? 'check' : 'copy'} className="h-4 w-4" />
