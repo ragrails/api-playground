@@ -41,6 +41,17 @@ const TARGET_INFO: Record<EmbedTarget, string> = {
   iframe: 'Works on any site. Paste the snippet, no install or build step.',
 }
 
+function NpmLogo({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 7" className={className} aria-hidden="true">
+      <path fill="#CB3837" d="M0,0h18v6H9v1H5V6H0V0z M1,5h2V2h1v3h1V1H1V5z M6,1v5h2V5h2V1H6z M8,2h1v2H8V2z M11,1v4h2V2h1v3h1V2h1v3h1V1H11z" />
+      <polygon fill="#FFFFFF" points="1,5 3,5 3,2 4,2 4,5 5,5 5,1 1,1 " />
+      <path fill="#FFFFFF" d="M6,1v5h2V5h2V1H6z M9,4H8V2h1V4z" />
+      <polygon fill="#FFFFFF" points="11,1 11,5 13,5 13,2 14,2 14,5 15,5 15,2 16,2 16,5 17,5 17,1 " />
+    </svg>
+  )
+}
+
 // Common HTTP status codes with their standard reason phrases.
 const HTTP_STATUS: { code: number; text: string }[] = [
   { code: 100, text: 'Continue' },
@@ -155,7 +166,7 @@ function Row({
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
       <div className="mb-1.5 text-[12px] font-medium text-muted">{label}</div>
@@ -528,7 +539,22 @@ function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: st
 
         {target === 'react' ? (
           <>
-            <Field label="1 · Install the package">
+            <Field
+              label={
+                <span className="flex items-center gap-2">
+                  <span>1 · Install the package</span>
+                  <a
+                    href="https://www.npmjs.com/package/@xendr/react"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="View @xendr/react on npm"
+                    className="inline-flex opacity-90 transition-opacity hover:opacity-100"
+                  >
+                    <NpmLogo className="h-3.5 w-9 shrink-0" />
+                  </a>
+                </span>
+              }
+            >
               <CodeBlock code="npm i @xendr/react" language="bash" />
             </Field>
             <Field label="2 · Import the component">

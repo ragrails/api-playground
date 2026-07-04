@@ -55,6 +55,8 @@ Paste a cURL request, customize the widget, preview the result, and copy the Rea
 npm i @xendr/react
 ```
 
+View the package on npm: [@xendr/react](https://www.npmjs.com/package/@xendr/react)
+
 `react` and `react-dom` are peer dependencies. React 18 and 19 are supported.
 
 ## Quick Start
