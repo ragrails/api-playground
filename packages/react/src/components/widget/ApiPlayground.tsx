@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Button, Card, CodeBlock, Icon } from '@/components/ui';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Card, CodeBlock, FluidHeight, Icon } from '@/components/ui';
 import { ApiConsole, type ApiConsoleHistoryEntry } from './ApiConsole';
 import { CodePreviewCard } from './CodePreviewCard';
 import { ImportCard } from './ImportCard';
@@ -167,87 +167,6 @@ const InvalidRequest: React.FC<{
   </Card>
 );
 
-const PANEL_TRANSITION_MS = 240;
-const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
-
-const PanelTransition: React.FC<{
-  panelKey: RenderedPanel;
-  children: React.ReactNode;
-}> = ({ panelKey, children }) => {
-  const outerRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const previousPanelRef = useRef(panelKey);
-  const lastHeightRef = useRef<number | null>(null);
-  const [height, setHeight] = useState<number | null>(null);
-  const [isClipped, setIsClipped] = useState(false);
-
-  useIsomorphicLayoutEffect(() => {
-    const outer = outerRef.current;
-    const inner = innerRef.current;
-    if (!outer || !inner) return;
-
-    if (previousPanelRef.current === panelKey) {
-      lastHeightRef.current = inner.getBoundingClientRect().height;
-      return;
-    }
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const startHeight = lastHeightRef.current ?? outer.getBoundingClientRect().height;
-    const endHeight = inner.getBoundingClientRect().height;
-    previousPanelRef.current = panelKey;
-    lastHeightRef.current = endHeight;
-
-    if (reduceMotion || Math.abs(startHeight - endHeight) < 1) {
-      setHeight(null);
-      setIsClipped(false);
-      return;
-    }
-
-    setIsClipped(true);
-    setHeight(startHeight);
-
-    const frame = window.requestAnimationFrame(() => {
-      // Force the browser to commit the start height before animating to the
-      // measured end height. Without this, quick panel swaps can coalesce.
-      outer.getBoundingClientRect();
-      setHeight(endHeight);
-    });
-    const timeout = window.setTimeout(() => {
-      setHeight(null);
-      setIsClipped(false);
-    }, PANEL_TRANSITION_MS);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.clearTimeout(timeout);
-    };
-  }, [panelKey]);
-
-  useEffect(() => {
-    const inner = innerRef.current;
-    if (!inner || typeof ResizeObserver === 'undefined') return;
-
-    const observer = new ResizeObserver(([entry]) => {
-      lastHeightRef.current = entry.contentRect.height;
-    });
-    observer.observe(inner);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={outerRef}
-      className="w-full transition-[height] duration-[240ms] ease-out"
-      style={{
-        height: height === null ? undefined : `${height}px`,
-        overflow: isClipped ? 'hidden' : undefined,
-      }}
-    >
-      <div ref={innerRef} className="w-full">{children}</div>
-    </div>
-  );
-};
-
 function hydrateRequest(
   request: WidgetRequest,
   title?: string,
@@ -357,7 +276,7 @@ export const ApiPlayground: React.FC<ApiPlaygroundProps> = ({
 
   return (
     <div data-theme={resolvedMode} style={style} className="w-full text-content text-left">
-      <PanelTransition panelKey={renderedPanel}>
+      <FluidHeight watchKey={renderedPanel}>
         <div key={renderedPanel} className="w-full">
           {panel === 'import' ? (
             <ImportCard
@@ -400,7 +319,7 @@ export const ApiPlayground: React.FC<ApiPlaygroundProps> = ({
           )}
           <PoweredBySignature mode={resolvedMode} />
         </div>
-      </PanelTransition>
+      </FluidHeight>
     </div>
   );
 };

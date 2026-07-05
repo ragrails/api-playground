@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
   Card,
   Checkbox,
   CodeBlock,
   CopyButton,
+  FluidHeight,
   Icon,
   IconButton,
   MethodBadge,
@@ -18,17 +19,10 @@ import {
 import type { HttpMethod } from '@/types';
 import { cn } from '@/lib/cn';
 import { executeWidgetRequest, widgetErrorResponse } from '@/lib/widget/executor';
-import {
-  authFromHeader,
-  initialAuth,
-  initialHeaders,
-  isAuthHeader,
-  isSameHeaderKey,
-  requestFromParts,
-  requestKey,
-  syncAuthHeader,
-} from '@/lib/widget/request-model';
-import type { EditableHeader, RequestParts } from '@/lib/widget/request-model';
+import { AUTH_HEADER_KEY, METHOD_OPTIONS, requestKey } from '@/lib/widget/request-model';
+import type { EditableHeader } from '@/lib/widget/request-model';
+import { useRequestDraft } from '@/lib/widget/use-request-draft';
+import type { DraftHeader } from '@/lib/widget/use-request-draft';
 import type {
   WidgetAuth,
   WidgetRequest,
@@ -40,7 +34,6 @@ type RequestTab = 'headers' | 'body' | 'auth';
 type ResponseTab = 'response' | 'history';
 type ResponsePanel = 'body' | 'headers';
 type AuthMode = WidgetAuth['type'];
-type DraftHeader = EditableHeader & { id: string };
 
 export interface ApiConsoleProps {
   request: WidgetRequest;
@@ -57,10 +50,6 @@ export interface ApiConsoleProps {
   onCodePreview?: () => void;
   className?: string;
 }
-
-const DEFAULT_BODY = '{\n  \n}';
-const AUTH_HEADER_KEY = 'Authorization';
-const METHOD_OPTIONS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 const REQUEST_TABS: { id: RequestTab; label: string; badge?: number }[] = [
   { id: 'body', label: 'Body' },
@@ -80,28 +69,12 @@ const AUTH_OPTIONS: { id: AuthMode; label: string; className: string }[] = [
   { id: 'apiKey', label: 'API key', className: 'font-semibold text-content hover:bg-surface-2' },
 ];
 
-function headerSignature(headers: EditableHeader[]): string {
-  return JSON.stringify(headers.map(({ key, value, enabled }) => ({ key, value, enabled })));
-}
-
-function stripHeaderIds(headers: DraftHeader[]): EditableHeader[] {
-  return headers.map(({ key, value, enabled }) => ({ key, value, enabled }));
-}
-
 function rowsForBody(body: string): number {
   return Math.max(3, body.split('\n').length);
 }
 
 function formatJsonBody(body: string): string {
   return JSON.stringify(JSON.parse(body), null, 2);
-}
-
-function formatJsonBodyOrOriginal(body: string): string {
-  try {
-    return formatJsonBody(body);
-  } catch {
-    return body;
-  }
 }
 
 const FieldShell: React.FC<{ children: React.ReactNode; className?: string }> = ({
@@ -623,17 +596,7 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
   onCodePreview,
   className,
 }) => {
-  const auth = useMemo(() => initialAuth(request), [request]);
-  const initialHeaderRows = useMemo(() => initialHeaders(request, auth), [request, auth]);
-  const nextHeaderIdRef = useRef(0);
-  const lastPublishedHeaderSignatureRef = useRef<string | null>(null);
-  const createDraftHeaders = (headers: EditableHeader[]): DraftHeader[] =>
-    headers.map((header) => ({ ...header, id: `header-${nextHeaderIdRef.current++}` }));
-  const [draftHeaders, setDraftHeaders] = useState<DraftHeader[]>(() =>
-    createDraftHeaders(initialHeaderRows),
-  );
-  const body = formatJsonBodyOrOriginal(request.body ?? DEFAULT_BODY);
-  const requestBody = request.body ?? '';
+  const draft = useRequestDraft(request, editable, onRequestChange);
   const [requestTab, setRequestTab] = useState<RequestTab>('body');
   const [responseTab, setResponseTab] = useState<ResponseTab>('response');
   const [responsePanel, setResponsePanel] = useState<ResponsePanel>('body');
@@ -641,8 +604,6 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
   const [internalHistory, setInternalHistory] = useState<ApiConsoleHistoryEntry[]>([]);
   const [internalSelectedResponse, setInternalSelectedResponse] = useState<WidgetResponse | null>(null);
   const [bodyError, setBodyError] = useState<string | null>(null);
-  const [draftMethod, setDraftMethod] = useState(request.method);
-  const [draftUrl, setDraftUrl] = useState(request.url);
   const responseCardRef = useRef<HTMLDivElement>(null);
   const history = controlledHistory ?? internalHistory;
   const setHistory = onHistoryChange ?? setInternalHistory;
@@ -650,110 +611,17 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
     controlledSelectedResponse !== undefined ? controlledSelectedResponse : internalSelectedResponse;
   const setSelectedResponse = onSelectedResponseChange ?? setInternalSelectedResponse;
 
-  useEffect(() => {
-    setDraftMethod(request.method);
-    setDraftUrl(request.url);
-  }, [request.method, request.url]);
-
-  useEffect(() => {
-    const incomingSignature = headerSignature(initialHeaderRows);
-    if (incomingSignature === lastPublishedHeaderSignatureRef.current) return;
-    setDraftHeaders(createDraftHeaders(initialHeaderRows));
-  }, [initialHeaderRows]);
-
   const displayedResponse = selectedResponse;
   const showResponseCard = Boolean(selectedResponse);
-  const headers = draftHeaders;
+  const headers = draft.headers;
+  const body = draft.body;
   const enabledHeaderCount = headers.filter((header) => header.enabled).length;
   const requestTabs = REQUEST_TABS.map((tab) =>
     tab.id === 'headers' ? { ...tab, badge: enabledHeaderCount } : tab,
   );
 
-  const emitRequestChange = (parts: Partial<RequestParts>) => {
-    if (!editable) return;
-    const nextHeaders = parts.headers ?? stripHeaderIds(headers);
-    const nextRequest = requestFromParts(request, {
-      method: draftMethod,
-      url: draftUrl,
-      body: requestBody,
-      auth,
-      ...parts,
-      headers: nextHeaders,
-    });
-    lastPublishedHeaderSignatureRef.current = headerSignature(
-      initialHeaders(nextRequest, nextRequest.auth ?? { type: 'none' }),
-    );
-    onRequestChange?.(nextRequest);
-  };
-
-  const changeAuth = (nextAuth: WidgetAuth) => {
-    const nextHeaders = syncAuthHeader(stripHeaderIds(headers), nextAuth, auth);
-    setDraftHeaders(createDraftHeaders(nextHeaders));
-    emitRequestChange({
-      auth: nextAuth,
-      headers: nextHeaders,
-    });
-  };
-
-  const changeMethod = (method: HttpMethod) => {
-    setDraftMethod(method);
-    emitRequestChange({ method });
-  };
-
-  const changeUrl = (url: string) => {
-    setDraftUrl(url);
-    emitRequestChange({ url });
-  };
-
-  const updateHeader = (id: string, patch: Partial<EditableHeader>) => {
-    const previousHeader = headers.find((header) => header.id === id);
-    const nextHeaders = headers.map((header) => (header.id === id ? { ...header, ...patch } : header));
-    const nextHeader = nextHeaders.find((header) => header.id === id);
-    const nextAuth =
-      nextHeader &&
-      ((previousHeader && isAuthHeader(previousHeader, auth)) ||
-        isAuthHeader(nextHeader, auth) ||
-        isSameHeaderKey(nextHeader.key, AUTH_HEADER_KEY))
-        ? nextHeader.enabled
-          ? authFromHeader(nextHeader)
-          : { type: 'none' as const }
-        : auth;
-
-    setDraftHeaders(nextHeaders);
-    emitRequestChange({ auth: nextAuth, headers: nextHeaders });
-  };
-
-  const removeHeader = (id: string) => {
-    const removedHeader = headers.find((header) => header.id === id);
-    const nextAuth =
-      removedHeader &&
-      (isAuthHeader(removedHeader, auth) || isSameHeaderKey(removedHeader.key, AUTH_HEADER_KEY))
-        ? { type: 'none' as const }
-        : auth;
-    const nextHeaders = headers.filter((header) => header.id !== id);
-
-    setDraftHeaders(nextHeaders);
-    emitRequestChange({
-      auth: nextAuth,
-      headers: nextHeaders,
-    });
-  };
-
-  const addHeader = () => {
-    setDraftHeaders([
-      ...headers,
-      { id: `header-${nextHeaderIdRef.current++}`, key: '', value: '', enabled: true },
-    ]);
-  };
-
   const send = async () => {
-    const sentRequest = requestFromParts(request, {
-      method: draftMethod,
-      url: draftUrl,
-      body: requestBody,
-      auth,
-      headers,
-    });
+    const sentRequest = draft.buildRequest();
     const sentRequestKey = requestKey(sentRequest);
 
     setIsSending(true);
@@ -788,7 +656,8 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
 
   const formatBody = () => {
     try {
-      emitRequestChange({ body: formatJsonBody(body) });
+      const formattedBody = formatJsonBody(body);
+      draft.changeBody(formattedBody);
       setBodyError(null);
     } catch {
       setBodyError('Invalid JSON');
@@ -842,12 +711,12 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
           </div>
 
           <RequestBar
-            method={draftMethod}
-            url={draftUrl}
+            method={draft.method}
+            url={draft.url}
             isSending={isSending}
             editable={editable}
-            onMethodChange={changeMethod}
-            onUrlChange={changeUrl}
+            onMethodChange={draft.changeMethod}
+            onUrlChange={draft.changeUrl}
             onSend={send}
           />
         </div>
@@ -862,21 +731,25 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
         </div>
 
         <div className="p-3">
-          <RequestContent
-            activeTab={requestTab}
-            auth={auth}
-            headers={headers}
-            body={body}
-            bodyError={bodyError}
-            editable={editable}
-            onAuthChange={changeAuth}
-            onHeaderUpdate={updateHeader}
-            onHeaderRemove={removeHeader}
-            onHeaderAdd={addHeader}
-            onBodyChange={(nextBody) => emitRequestChange({ body: nextBody })}
-            onBodyFormat={formatBody}
-            onBodyErrorClear={() => setBodyError(null)}
-          />
+          <FluidHeight watchKey={requestTab}>
+            <RequestContent
+              activeTab={requestTab}
+              auth={draft.auth}
+              headers={headers}
+              body={body}
+              bodyError={bodyError}
+              editable={editable}
+              onAuthChange={draft.changeAuth}
+              onHeaderUpdate={draft.updateHeader}
+              onHeaderRemove={draft.removeHeader}
+              onHeaderAdd={draft.addHeader}
+              onBodyChange={(nextBody) => {
+                draft.changeBody(nextBody);
+              }}
+              onBodyFormat={formatBody}
+              onBodyErrorClear={() => setBodyError(null)}
+            />
+          </FluidHeight>
         </div>
       </Card>
 
@@ -897,7 +770,8 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
               </div>
             </div>
 
-            {responseTab === 'response' && displayedResponse ? (
+            <FluidHeight watchKey={`${responseTab}:${responsePanel}:${displayedResponse ? 'present' : 'empty'}`}>
+              {responseTab === 'response' && displayedResponse ? (
                 <>
                   <div className="flex flex-wrap items-center gap-5 border-b border-border px-3 py-2.5 text-xs text-muted">
                     <StatusBadge status={displayedResponse.status} statusText={displayedResponse.statusText} />
@@ -906,15 +780,16 @@ export const ApiConsole: React.FC<ApiConsoleProps> = ({
                   </div>
                   <ResponseContent responsePanel={responsePanel} response={displayedResponse} />
                 </>
-            ) : (
-              <div className="p-3">
-                <HistoryList
-                  entries={history}
-                  onSelect={selectHistory}
-                  onClear={() => setHistory([])}
-                />
-              </div>
-            )}
+              ) : (
+                <div className="p-3">
+                  <HistoryList
+                    entries={history}
+                    onSelect={selectHistory}
+                    onClear={() => setHistory([])}
+                  />
+                </div>
+              )}
+            </FluidHeight>
           </Card>
         </div>
       )}

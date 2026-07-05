@@ -1,6 +1,6 @@
 {
   "name": "@xendr/react",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "description": "Lightweight embeddable React API playground for interactive API docs, cURL snippets, try-it-out requests, and developer portals.",
   "keywords": [

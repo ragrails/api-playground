@@ -1,6 +1,10 @@
 import type { HttpMethod } from '@/types';
 import type { WidgetAuth, WidgetHeader, WidgetRequest } from './types';
 
+export const DEFAULT_BODY = '{\n  \n}';
+export const METHOD_OPTIONS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+export const AUTH_HEADER_KEY = 'Authorization';
+
 export interface EditableHeader extends WidgetHeader {
   enabled: boolean;
 }
@@ -13,12 +17,24 @@ export interface RequestParts {
   headers: EditableHeader[];
 }
 
-const AUTH_HEADER_KEY = 'Authorization';
 const BEARER_PREFIX = 'Bearer ';
+const BODY_METHODS = new Set<HttpMethod>(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 const DEFAULT_HEADERS: EditableHeader[] = [
   { key: 'Content-Type', value: 'application/json', enabled: true },
 ];
+
+export function methodSupportsBody(method: HttpMethod): boolean {
+  return BODY_METHODS.has(method);
+}
+
+export function initialBody(request: WidgetRequest): string {
+  return request.body ?? DEFAULT_BODY;
+}
+
+export function outgoingBodyForMethod(method: HttpMethod, body: string): string {
+  return methodSupportsBody(method) ? body : '';
+}
 
 export function authHeader(auth: WidgetAuth): EditableHeader | null {
   if (auth.type === 'none') return null;
@@ -112,7 +128,8 @@ export function requestKey(request: WidgetRequest): string {
 }
 
 export function requestFromParts(base: WidgetRequest, parts: RequestParts): WidgetRequest {
-  const body = parts.body.trim() ? parts.body : undefined;
+  const outgoingBody = outgoingBodyForMethod(parts.method, parts.body);
+  const body = outgoingBody.trim() ? outgoingBody : undefined;
 
   return {
     ...base,

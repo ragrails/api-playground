@@ -26,3 +26,4 @@ export { CodeBlock } from './CodeBlock';
 export { ResponseEmptyState } from './ResponseEmptyState';
 export { ResponseLoadingState } from './ResponseLoadingState';
 export { Skeleton } from './Skeleton';
+export { FluidHeight } from './FluidHeight';
