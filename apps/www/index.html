@@ -3,44 +3,155 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Xendr - Embeddable React API Playground for Developer Docs</title>
+    <title>Xendr - Lightweight, Embeddable API Tester for Developer Documentation</title>
     <meta
       name="description"
-      content="Xendr is a lightweight embeddable React API playground for interactive API docs, developer portals, cURL snippets, try-it-out requests, and live API testing."
+      content="Xendr is a lightweight API tester for developer docs, websites, and guides. Let developers run documented requests without copying cURL into Postman, Swagger, or Hoppscotch."
     />
     <meta
       name="keywords"
-      content="Xendr, React API playground, API playground, API console, interactive API docs, developer portal, cURL snippets, try it out, API testing, REST API docs"
+      content="Xendr, API tester, embeddable API tester, React API tester, API playground, API console, interactive API docs, developer portal, cURL snippets, try it out, API testing, REST API docs, API documentation"
     />
     <meta name="author" content="Xendr" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#16171d" />
     <link rel="canonical" href="https://www.xendr.dev/" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="icon" href="/logo/favicon/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logo/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo/favicon/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="/logo/favicon/site.webmanifest" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Xendr" />
-    <meta property="og:title" content="Xendr - Embeddable React API Playground" />
+    <meta property="og:title" content="Xendr - Lightweight API Tester for Developer Docs" />
     <meta
       property="og:description"
-      content="Add an interactive API playground to your docs with cURL import, code snippets, request editing, auth, response examples, and live API testing."
+      content="Embed a lightweight API tester in your docs so developers can run requests, inspect responses, view history, import cURL, and copy code snippets."
     />
     <meta property="og:url" content="https://www.xendr.dev/" />
-    <meta property="og:image" content="https://www.xendr.dev/xendr-dark-bg.png" />
-    <meta property="og:image:alt" content="Xendr API playground for interactive developer docs" />
+    <meta property="og:image" content="https://www.xendr.dev/logo/social/xendr-social-preview.jpg" />
+    <meta property="og:image:alt" content="Xendr embeddable API tester for developer docs" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Xendr - Embeddable React API Playground" />
+    <meta name="twitter:title" content="Xendr - Lightweight API Tester for Developer Docs" />
     <meta
       name="twitter:description"
-      content="A lightweight React API playground for interactive docs, developer portals, cURL snippets, try-it-out requests, and live API testing."
+      content="A lightweight API tester for docs, websites, and guides. Let developers test documented APIs without switching tools."
     />
-    <meta name="twitter:image" content="https://www.xendr.dev/xendr-dark-bg.png" />
-    <meta name="twitter:image:alt" content="Xendr API playground for interactive developer docs" />
+    <meta name="twitter:image" content="https://www.xendr.dev/logo/social/xendr-social-preview.jpg" />
+    <meta name="twitter:image:alt" content="Xendr embeddable API tester for developer docs" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://www.xendr.dev/#organization",
+            "name": "Xendr",
+            "url": "https://www.xendr.dev/",
+            "logo": "https://www.xendr.dev/logo/png/xendr-purple-dark-bg.png",
+            "sameAs": [
+              "https://github.com/samowolabi/xendr",
+              "https://www.npmjs.com/package/@xendr/react"
+            ]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://www.xendr.dev/#software",
+            "name": "Xendr",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Web",
+            "url": "https://www.xendr.dev/",
+            "image": "https://www.xendr.dev/logo/social/xendr-social-preview.jpg",
+            "description": "A lightweight API tester for developer docs, websites, and guides. Xendr lets developers run documented requests without copying cURL into Postman, Swagger, or Hoppscotch.",
+            "softwareHelp": "https://www.xendr.dev/playground",
+            "downloadUrl": "https://www.npmjs.com/package/@xendr/react",
+            "author": {
+              "@id": "https://www.xendr.dev/#organization"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://www.xendr.dev/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Xendr?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Xendr is a lightweight API tester you can embed in developer documentation, websites, and guides. It lets developers test requests where the API is documented instead of copying cURL into another tool."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where can I embed Xendr?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You can embed Xendr in developer docs, product websites, API guides, and internal portals. React apps can use @xendr/react directly, and other sites can use the hosted iframe embed."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Does it replace tools like Postman or Hoppscotch?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "For documentation workflows, yes. Instead of copying a cURL example into Postman, Swagger, or Hoppscotch, users can authenticate, edit, and send the request directly inside your docs."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can developers preview code in other languages?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Xendr can show the same request as cURL and other programming language snippets, so developers can copy code that matches their stack."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I document error responses?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. You can add sample responses for different HTTP status codes, including error cases, so users understand what each API response looks like."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can users import a new cURL request?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, when cURL import is enabled. Users can paste a new cURL request and turn it into an editable request inside the tester."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I customize the widget to match my brand?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. You can configure primary color, background, mode, visible snippet languages, default view, imports, and sample responses."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is the npm package tracking my users?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The @xendr/react package is built as a standalone component and does not include any analytics or tracking."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

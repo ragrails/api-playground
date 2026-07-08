@@ -151,6 +151,7 @@ const RequestBar: React.FC<RequestBarProps> = ({
       size="md"
       variant="primary"
       isLoading={isSending}
+      disabled={!url.trim()}
       onClick={onSend}
       rightIcon={<Icon name="send" className="h-4 w-4" />}
       className="min-h-10 px-7"

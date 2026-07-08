@@ -1,7 +1,7 @@
 import type { HttpMethod } from '@/types';
 import type { WidgetAuth, WidgetHeader, WidgetRequest } from './types';
 
-export const DEFAULT_BODY = '{\n  \n}';
+export const DEFAULT_BODY = '{}';
 export const METHOD_OPTIONS: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 export const AUTH_HEADER_KEY = 'Authorization';
 

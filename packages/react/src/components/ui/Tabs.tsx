@@ -57,9 +57,9 @@ export const Tabs: React.FC<TabsProps> = ({
   if (variant === 'segmented') {
     return (
       <div className={cn('relative inline-flex gap-0.5 rounded-lg bg-surface-2/70 p-0.5 ring-1 ring-border/70', className)}>
-        {/* Sliding pill with white "liquid glass" surface (matches the Switch thumb) */}
+        {/* Sliding pill with a soft surface tint. */}
         <span
-          className="pointer-events-none absolute z-0 rounded-lg bg-white/95 shadow-sm ring-1 ring-black/[0.06] backdrop-blur-sm transition-all duration-300 ease-out"
+          className="pointer-events-none absolute z-0 rounded-lg bg-surface shadow-sm ring-1 ring-border/80 backdrop-blur-sm transition-all duration-300 ease-out"
           style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }}
         />
         {items.map((item) => {
@@ -71,10 +71,11 @@ export const Tabs: React.FC<TabsProps> = ({
                 btnRefs.current[item.id] = el;
               }}
               onClick={() => onChange(item.id)}
+              aria-selected={active}
               className={cn(
                 'group/seg relative z-10 cursor-pointer whitespace-nowrap rounded-[7px] font-heading font-medium transition-colors duration-150',
                 size === 'sm' ? 'px-2.5 py-1 text-[12px]' : 'px-3 py-1.5 text-[13px]',
-                active ? 'text-[#1c1d24]' : 'text-muted hover:text-content',
+                active ? 'text-content' : 'text-muted hover:text-content',
               )}
             >
               {/* Inactive text labels shimmer (gradient clipped to the text) on hover.
@@ -109,6 +110,7 @@ export const Tabs: React.FC<TabsProps> = ({
               btnRefs.current[item.id] = el;
             }}
             onClick={() => onChange(item.id)}
+            aria-selected={active}
             className={cn(
               'inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap font-heading transition-colors duration-150',
               size === 'sm' ? 'px-2 py-1.5 text-[12px]' : 'px-3 py-1.5 text-[13px]',

@@ -1,0 +1,109 @@
+/* Landing-page bits that aren't expressible as Tailwind utilities: the global
+   #root / body overrides (the marketing page is full-bleed, unlike the rest of
+   the site) and two decorative background patterns. Everything else lives as
+   utility classes in Home.tsx. */
+
+#root:has(.lp) {
+  width: 100%;
+  max-width: 100%;
+  border-inline: 0;
+  text-align: left;
+}
+
+body:has(.lp) {
+  background: #ffffff;
+}
+
+/* Faded black for the landing's `text-muted` (subheadings, secondary text).
+   Flows through the package's themed `--color-muted` mapping. */
+.lp {
+  --text-muted: #6b6b70;
+}
+
+.lp ::selection {
+  background: color-mix(in srgb, #7855ff 30%, transparent);
+}
+
+/* Ramp-style faint dot grid behind the hero + playground showcase. Applied to
+   a plain absolutely-positioned <div> spanning both; fades out only near the
+   bottom, so the dots run to the end of the showcase. */
+/* The dots themselves are drawn by DotGridCanvas, which reads `color` here as
+   its dot color; the fade-out mask stays in CSS. */
+.lp-hero-grid {
+  color: #b8c2cc;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 88%, transparent 100%);
+}
+
+/* Bento cards (dark band): on hover, a very light white gradient washes in
+   from the top-left corner. */
+.lp-card-glow {
+  position: relative;
+}
+
+.lp-card-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: radial-gradient(
+    120% 120% at 0% 0%,
+    rgba(255, 255, 255, 0.03),
+    transparent 70%
+  );
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 450ms ease;
+  pointer-events: none;
+}
+
+.lp-card-glow:hover::before {
+  opacity: 1;
+}
+
+/* Diagonal hatch for image placeholders until real previews land. */
+.lp-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, #dbe1e6 55%, transparent) 0 1px,
+    transparent 1px 10px
+  );
+}
+
+/* Dark-band variant of the hatch (features section). */
+.lp-hatch-dark {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.045) 0 1px,
+    transparent 1px 10px
+  );
+}
+
+/* Stats ticker: a seamless left-scrolling marquee with faded edges. The track
+   holds 6 copies of the stats and slides by half its width, so the second half
+   lands exactly where the first began — no visible seam. */
+.lp-marquee {
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+
+.lp-marquee-track {
+  animation: lp-marquee 40s linear infinite;
+}
+
+.lp-marquee:hover .lp-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes lp-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-marquee-track {
+    animation: none;
+  }
+}

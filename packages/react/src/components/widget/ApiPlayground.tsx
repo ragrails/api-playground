@@ -225,9 +225,13 @@ export const ApiPlayground: React.FC<ApiPlaygroundProps> = ({
     setLiveCurl(request);
   }, [request]);
 
-  // Console entity: always the live cURL.
+  // Console entity: always the live cURL. An intentionally empty request is a
+  // blank console draft (start-from-scratch surfaces), not an invalid one —
+  // garbage input still falls through to the invalid card.
   const parsedRequest = useMemo(() => {
-    const parsed = parseCurl(liveCurl);
+    const parsed =
+      parseCurl(liveCurl) ??
+      (liveCurl.trim() === '' ? ({ title: '', method: 'GET', url: '', headers: [] } as WidgetRequest) : null);
     return parsed ? hydrateRequest(parsed, title, sampleResponse, responseExamples) : null;
   }, [liveCurl, title, sampleResponse, responseExamples]);
   const lastConsoleRequestRef = useRef<WidgetRequest | null>(parsedRequest);

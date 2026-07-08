@@ -8,6 +8,14 @@ A lightweight, embeddable React API playground for interactive API docs, develop
 
 Give developers a fast way to understand and test your API without leaving your docs. Add one component and get cURL-powered code snippets, a **Try it out** console, request editing, auth, cURL import, live API responses, and history.
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/samowolabi/xendr/main/packages/react/media/preview.png"
+    alt="Xendr API playground — a cURL request with cURL/JavaScript/Python/Go snippet tabs and a live 201 Created response"
+    width="820"
+  />
+</p>
+
 Built by [Xendr](https://www.xendr.dev).
 
 ## Visual Setup

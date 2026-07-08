@@ -1,7 +1,7 @@
 {
   "name": "Xendr",
   "short_name": "Xendr",
-  "description": "Embeddable React API playground for interactive developer docs.",
+  "description": "Lightweight API tester for developer docs, websites, and guides.",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",

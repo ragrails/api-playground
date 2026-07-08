@@ -290,8 +290,8 @@
 
 .pg-canvas {
   background-color: color-mix(in srgb, var(--bg) 92%, #000000);
-  background-image: radial-gradient(currentColor 1.3px, transparent 1.3px);
-  background-size: 22px 22px;
+  /* Dots are drawn by the www app's DotGridCanvas, which reads `color` here
+     as its dot color. */
   color: color-mix(in srgb, var(--text) 12%, transparent);
 }
 

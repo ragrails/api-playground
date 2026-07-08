@@ -258,7 +258,7 @@ function ResponsesEditor({ cfg }: { cfg: PlaygroundConfig }) {
             spellCheck={false}
             rows={5}
             aria-label={`${active.status} response body`}
-            className="w-full resize-none rounded border border-border bg-surface p-2 font-mono text-[11px] leading-relaxed text-content outline-none"
+            className="pg-code-field w-full resize-none rounded border border-border bg-surface p-2 font-mono text-[11px] leading-relaxed text-content outline-none"
           />
         </div>
       )}
@@ -399,7 +399,7 @@ function Controls({ cfg, onEmbed }: { cfg: PlaygroundConfig; onEmbed: () => void
             onChange={(e) => cfg.setRequest(e.target.value)}
             spellCheck={false}
             rows={6}
-            className="w-full resize-none rounded-md border border-border bg-surface-2 p-2.5 font-mono text-[12px] leading-relaxed text-content outline-none"
+            className="pg-code-field w-full resize-none rounded-md border border-border bg-surface-2 p-2.5 font-mono text-[12px] leading-relaxed text-content outline-none"
           />
         </div>
       </Section>
@@ -498,7 +498,7 @@ function Controls({ cfg, onEmbed }: { cfg: PlaygroundConfig; onEmbed: () => void
 
 /* ── Embed view ───────────────────────────────────────────────────────────── */
 
-function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: string; onBack: () => void }) {
+export function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: string; onBack: () => void }) {
   const [target, setTarget] = useState<EmbedTarget>('react')
   const [copied, setCopied] = useState(false)
   const copyValue = target === 'iframe' ? iframeCode : code
@@ -562,8 +562,8 @@ function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: st
             <Field label="3 · Add the component">
               <CodeBlock code={reactComponentCode} language="javascript" maxHeight="270px" />
             </Field>
-            <button type="button" onClick={copy} className={cn(accentButton, 'justify-center gap-2 text-[14px] font-semibold')}>
-              <Icon name={copied ? 'check' : 'copy'} className="h-4 w-4" />
+            <button type="button" onClick={copy} className={cn(accentButton, 'justify-center gap-1.5 text-[14px] font-semibold')}>
+              <Icon name={copied ? 'check' : 'copy'} className="h-3.5 w-3.5" />
               {copied ? 'Copied' : 'Copy component'}
             </button>
           </>
@@ -588,11 +588,11 @@ function EmbedPanel({ code, iframeCode, onBack }: { code: string; iframeCode: st
 
 /* ── Inspector ────────────────────────────────────────────────────────────── */
 
-export function Inspector({ cfg }: { cfg: PlaygroundConfig }) {
+export function Inspector({ cfg, className }: { cfg: PlaygroundConfig; className?: string }) {
   const [embedOpen, setEmbedOpen] = useState(false)
 
   return (
-    <aside className="pg-inspector flex min-h-0 flex-col overflow-y-auto bg-surface">
+    <aside className={cn('pg-inspector flex min-h-0 flex-col overflow-y-auto bg-surface', className)}>
       {embedOpen ? (
         <EmbedPanel code={cfg.code} iframeCode={cfg.iframeCode} onBack={() => setEmbedOpen(false)} />
       ) : (

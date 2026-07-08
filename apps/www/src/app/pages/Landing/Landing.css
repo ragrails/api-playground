@@ -12,15 +12,64 @@
   text-align: left;
 }
 
-.pg-shell {
+.pg-shell,
+.pg-embed {
   font-family: var(--sans);
+}
+
+/* Bounded, in-document-flow variant used inside a scrolling page (landing
+   showcase section). Reads as a framed product surface: rounded, bordered,
+   elevated. Deliberately omits the `.pg-shell` class so `#root:has(.pg-shell)`
+   does not lock the page to 100svh / overflow hidden. */
+.pg-embed {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+/* Thin, sleek scrollbars for every scrollable pane inside the showcase (canvas,
+   inspector rail, nested code/response bodies). The thumb is a translucent tint
+   of the nearest theme's --text, so it reads light on the dark widget and dark
+   on the light inspector. Scoped to the showcase — the page keeps its default. */
+.pg-shell ::-webkit-scrollbar,
+.pg-embed ::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.pg-shell ::-webkit-scrollbar-track,
+.pg-embed ::-webkit-scrollbar-track,
+.pg-shell ::-webkit-scrollbar-corner,
+.pg-embed ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.pg-shell ::-webkit-scrollbar-thumb,
+.pg-embed ::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text) 24%, transparent);
+}
+
+.pg-shell ::-webkit-scrollbar-thumb:hover,
+.pg-embed ::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text) 44%, transparent);
+}
+
+/* Firefox */
+.pg-shell,
+.pg-shell *,
+.pg-embed,
+.pg-embed * {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text) 24%, transparent) transparent;
 }
 
 /* Light theme: exact neutral color system from the reference inspector.
    Scoped to the shell so it overrides the generic light tokens (higher
    specificity than the global [data-theme="light"]) without touching the
    widget, which re-declares its own tokens in its subtree. */
-.pg-shell[data-theme='light'] {
+.pg-shell[data-theme='light'],
+.pg-embed[data-theme='light'] {
   --bg: #f2f2f2; /* canvas */
   --surface: #f7f7f7; /* inspector panel + top bar */
   --surface-2: #ececec; /* field fills, inputs */
@@ -35,6 +84,15 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 380px;
   min-height: 0;
+  /* As a flex child of the shell, min-width:auto would let the grid grow to its
+     content's min-content (a wide code line) and overflow the viewport. Pin it
+     to 0 so the panes stay within the shell and their code blocks scroll. */
+  min-width: 0;
+}
+
+/* The canvas is a grid item; keep it from being widened by its content too. */
+.pg-canvas {
+  min-width: 0;
 }
 
 .pg-inspector {
@@ -42,27 +100,27 @@
 }
 
 @media (max-width: 1024px) {
+  /* One pane visible at a time (the Preview/Embed toggle). It fills the
+     bounded height and scrolls its own overflow. */
   .pg-workspace {
     grid-template-columns: minmax(0, 1fr);
-    grid-auto-rows: min-content;
-    overflow-y: auto;
+    grid-auto-rows: minmax(0, 1fr);
   }
 
   .pg-canvas {
-    min-height: 55svh;
+    min-height: 0;
   }
 
   .pg-inspector {
     border-left: 0;
-    border-top: 1px solid var(--border);
   }
 }
 
 /* Canvas: a flat dot grid, echoing a design tool. */
 .pg-canvas {
   background-color: color-mix(in srgb, var(--bg) 92%, #000000);
-  background-image: radial-gradient(currentColor 1.3px, transparent 1.3px);
-  background-size: 22px 22px;
+  /* The dots themselves are drawn by DotGridCanvas, which reads `color` here
+     as its dot color — keep it in sync with the theme overrides below. */
   color: color-mix(in srgb, var(--text) 12%, transparent);
 }
 
@@ -86,6 +144,13 @@
   white-space: nowrap;
   box-shadow: 0 10px 26px color-mix(in srgb, #000000 8%, transparent);
   backdrop-filter: blur(12px);
+}
+
+/* Right-anchored variant (e.g. the /try-it theme switch). */
+.pg-canvas-footer--right {
+  left: auto;
+  right: 18px;
+  transform: none;
 }
 
 .pg-canvas-footer a {
@@ -112,8 +177,54 @@
   opacity: 0.45;
 }
 
+/* Inspector code fields (cURL request, response bodies) read too bright on
+   dark chrome; soften the text there. Light chrome keeps full contrast. */
+.pg-shell[data-theme='dark'] .pg-code-field,
+.pg-embed[data-theme='dark'] .pg-code-field {
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
 /* In light mode the canvas is a flat #f2f2f2 with soft grey dots (reference). */
-.pg-shell[data-theme='light'] .pg-canvas {
+.pg-shell[data-theme='light'] .pg-canvas,
+.pg-embed[data-theme='light'] .pg-canvas {
   background-color: #f2f2f2;
   color: color-mix(in srgb, var(--text) 22%, transparent);
+}
+
+.pg-mobile-switcher button:nth-of-type(2)[aria-selected='false'] {
+  overflow: hidden;
+  animation: pg-export-pulse calc(var(--shimmer-dur) * 2) ease-in-out infinite;
+  transform-origin: center;
+}
+
+.pg-mobile-switcher button:nth-of-type(2)[aria-selected='false']::before {
+  content: '';
+  position: absolute;
+  inset-block: -45%;
+  left: -65%;
+  z-index: 0;
+  width: 42%;
+  transform: skewX(-18deg) translateX(0);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--primary-contrast) 24%, transparent),
+    color-mix(in srgb, var(--primary-contrast) 46%, transparent),
+    color-mix(in srgb, var(--primary-contrast) 24%, transparent),
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+  animation: pg-export-shimmer-cycle calc(var(--shimmer-dur) * 2) var(--dropdown-ease) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-mobile-switcher button:nth-of-type(2)[aria-selected='false'] {
+    animation: none;
+  }
+
+  .pg-mobile-switcher button:nth-of-type(2)[aria-selected='false']::before {
+    content: none;
+    animation: none;
+  }
 }

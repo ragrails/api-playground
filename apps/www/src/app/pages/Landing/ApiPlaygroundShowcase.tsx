@@ -1,20 +1,53 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiPlayground } from '@xendr/react'
 import { XendrLogo } from '@pkg/components/widget/XendrLogo'
-import { Inspector } from './Inspector'
+import { Icon, Tabs } from '@pkg/components/ui'
+import { DotGridCanvas } from '../../components/DotGridCanvas'
+import { EmbedPanel, Inspector } from './Inspector'
 import { usePlaygroundConfig } from './playground'
+import './Landing.css'
+
+interface ApiPlaygroundShowcaseProps {
+  /**
+   * Render as a bounded, in-document-flow surface (rounded card) instead of the
+   * full-viewport `.pg-shell`. Used when the showcase sits inside a scrolling
+   * page, e.g. the landing showcase section — avoids the
+   * `#root:has(.pg-shell)` overflow lock.
+   */
+  embedded?: boolean
+}
 
 /**
  * Full playground shell: live widget on the left, control inspector on the
  * right, plus the branded footer and embed/share flows.
  */
-export function ApiPlaygroundShowcase() {
+export function ApiPlaygroundShowcase({ embedded = false }: ApiPlaygroundShowcaseProps) {
   const cfg = usePlaygroundConfig()
+  // Chrome theme (canvas + inspector). Independent of the widget's own mode,
+  // which the inspector controls separately.
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
+  // Mobile (<=1024px) shows one pane at a time via a Preview/Embed toggle.
+  // Above 1024px both panes are always visible, so this is inert there.
+  const [mobileView, setMobileView] = useState<'preview' | 'embed'>('preview')
 
   return (
-    <div data-theme="light" className="pg-shell flex h-[100svh] flex-col overflow-hidden bg-bg text-content">
+    <div
+      data-theme={theme}
+      className={
+        embedded
+          ? 'pg-embed flex min-w-0 flex-col bg-bg text-content h-full'
+          : 'pg-shell flex h-[100svh] min-w-0 flex-col overflow-hidden bg-bg text-content'
+      }
+    >
       <div className="pg-workspace flex-1 overflow-hidden">
-        <div className="pg-canvas relative flex overflow-auto p-6 pb-20 sm:p-10 sm:pb-24">
-          <div className="relative z-10 m-auto w-full max-w-[570px]">
+        <div
+          className={`pg-canvas relative flex overflow-auto p-4 pb-8 sm:p-10 ${
+            mobileView === 'embed' ? 'max-[1024px]:hidden' : ''
+          }`}
+        >
+          <DotGridCanvas />
+          <div className="relative z-10 m-auto w-full min-w-0 max-w-[570px]">
             <ApiPlayground
               request={cfg.request}
               onUpdateRequest={cfg.setRequest}
@@ -29,34 +62,49 @@ export function ApiPlaygroundShowcase() {
               customization={cfg.customization}
             />
           </div>
-          <div className="pg-canvas-footer">
-            <a href="https://www.xendr.dev" target="_blank" rel="noreferrer">
-              <span>Powered by</span>
-              <XendrLogo className="h-3 w-auto text-content" />
-            </a>
-            <span data-separator aria-hidden="true" />
-            <a href="https://www.xendr.dev" target="_blank" rel="noreferrer">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className="shrink-0"
+          {/* Inside our own site (embedded) the floating footer is redundant. */}
+          {!embedded && (
+            <div className="pg-canvas-footer">
+              <Link to="/">
+                <span>Powered by</span>
+                <XendrLogo className="h-2.5 w-auto" variant={theme === 'dark' ? 'light' : 'dark'} />
+              </Link>
+              <span data-separator aria-hidden="true" />
+              <button
+                type="button"
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                className="grid h-5 w-5 place-items-center rounded-full transition-colors hover:text-content"
               >
-                <path
-                  fill="currentColor"
-                  fillRule="evenodd"
-                  d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12S6.477 2 12 2s10 4.477 10 10M12 7.75c-.621 0-1.125.504-1.125 1.125a.75.75 0 0 1-1.5 0a2.625 2.625 0 1 1 4.508 1.829q-.138.142-.264.267a7 7 0 0 0-.571.617c-.22.282-.298.489-.298.662V13a.75.75 0 0 1-1.5 0v-.75c0-.655.305-1.186.614-1.583c.229-.294.516-.58.75-.814q.106-.105.193-.194A1.125 1.125 0 0 0 12 7.75M12 17a1 1 0 1 0 0-2a1 1 0 0 0 0 2"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Help
-            </a>
-          </div>
+                <Icon name={theme === 'light' ? 'moon' : 'sun'} className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
 
-        <Inspector cfg={cfg} />
+        <Inspector cfg={cfg} className="max-[1024px]:hidden" />
+        <aside
+          className={`pg-inspector flex min-h-0 flex-col overflow-y-auto bg-surface min-[1025px]:hidden ${
+            mobileView === 'preview' ? 'max-[1024px]:hidden' : ''
+          }`}
+        >
+          <EmbedPanel code={cfg.code} iframeCode={cfg.iframeCode} onBack={() => setMobileView('preview')} />
+        </aside>
+      </div>
+
+      {/* Mobile-only pane switcher. Hidden from 1024px up. */}
+      <div className="hidden shrink-0 items-center justify-center border-t border-border p-2.5 max-[1024px]:flex">
+        <Tabs
+          variant="segmented"
+          items={[
+            { id: 'preview', label: 'Preview' },
+            { id: 'embed', label: 'Embed' },
+          ]}
+          activeId={mobileView}
+          onChange={(id) => setMobileView(id as 'preview' | 'embed')}
+          className="pg-mobile-switcher w-full max-w-[280px] [&>button]:flex-1"
+        />
       </div>
     </div>
   )

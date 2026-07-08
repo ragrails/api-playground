@@ -76,6 +76,14 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({
   const visibleItems = useMemo(() => snippetLanguageItems(visibleLanguages), [visibleLanguages]);
   const overflowItems = useMemo(() => snippetLanguageItems(overflowLanguages), [overflowLanguages]);
   const moreValue = overflowLanguages.includes(activeLanguage) ? activeLanguage : overflowLanguages[0];
+  const mobilePrimaryLanguage = useMemo<SnippetLanguage>(() => (languages.includes('curl') ? 'curl' : languages[0]), [languages]);
+  const mobileOverflowLanguages = useMemo(
+    () => languages.filter((language) => language !== mobilePrimaryLanguage),
+    [languages, mobilePrimaryLanguage],
+  );
+  const mobilePrimaryItems = useMemo(() => snippetLanguageItems([mobilePrimaryLanguage]), [mobilePrimaryLanguage]);
+  const mobileOverflowItems = useMemo(() => snippetLanguageItems(mobileOverflowLanguages), [mobileOverflowLanguages]);
+  const mobileMoreValue = mobileOverflowLanguages.includes(activeLanguage) ? activeLanguage : mobileOverflowLanguages[0];
   const showTryButton = Boolean(onTryItOut);
 
   useEffect(() => {
@@ -93,8 +101,8 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({
   return (
     <div className="w-full space-y-3">
       <Card>
-        <div className="relative flex items-center justify-between">
-          <div className="flex min-w-0 items-center gap-2">
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="hidden min-w-0 items-center gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:flex [&::-webkit-scrollbar]:hidden">
             <Tabs
               items={visibleItems}
               activeId={visibleLanguages.includes(activeLanguage) ? activeLanguage : ''}
@@ -108,6 +116,24 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({
                 items={overflowItems}
                 size="sm"
                 triggerLabel={overflowLanguages.includes(activeLanguage) ? undefined : 'More'}
+                minWidthClassName="min-w-28"
+              />
+            )}
+          </div>
+          <div className="flex min-w-0 items-center gap-2 sm:hidden">
+            <Tabs
+              items={mobilePrimaryItems}
+              activeId={activeLanguage === mobilePrimaryLanguage ? activeLanguage : ''}
+              onChange={selectLanguage}
+              className="[&_button]:text-[13px]"
+            />
+            {mobileOverflowLanguages.length > 0 && (
+              <Select
+                value={mobileMoreValue}
+                onChange={setLang}
+                items={mobileOverflowItems}
+                size="sm"
+                triggerLabel={mobileOverflowLanguages.includes(activeLanguage) ? undefined : 'More'}
                 minWidthClassName="min-w-28"
               />
             )}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Badge,
   Button,
@@ -293,7 +294,9 @@ const PreviewSidebar: React.FC<{
   widgetBackground,
   onWidgetBackgroundChange,
   onWidgetBackgroundReset,
-}) => (
+}) => {
+  const navigate = useNavigate();
+  return (
   <aside className="w-64 shrink-0">
     <div className="space-y-6">
       <ThemePanel
@@ -307,7 +310,7 @@ const PreviewSidebar: React.FC<{
         activeId={activeTab}
         onChange={(id) => {
           const next = LIBRARY_TABS.find((item) => item.id === id);
-          if (next) window.location.href = next.href;
+          if (next) navigate(next.href);
         }}
         className="flex w-full [&>button]:flex-1"
       />
@@ -339,7 +342,8 @@ const PreviewSidebar: React.FC<{
       </nav>
     </div>
   </aside>
-);
+  );
+};
 
 export const ComponentLibrary: React.FC<{ section?: ComponentLibrarySection }> = ({ section = 'preview' }) => {
   const [tab, setTab] = useState('curl');

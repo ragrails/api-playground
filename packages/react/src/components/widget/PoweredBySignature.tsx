@@ -15,9 +15,8 @@ export const PoweredBySignature: React.FC<PoweredBySignatureProps> = ({ mode }) 
     >
       <span>Powered by</span>
       <XendrLogo
-        className={`h-2.5 w-auto opacity-70 transition-opacity hover:opacity-85 ${
-          mode === 'dark' ? 'text-white' : 'text-[#1D1D1D]'
-        }`}
+        className="h-[9px] w-auto opacity-70 transition-opacity hover:opacity-85"
+        variant={mode === 'dark' ? 'light' : 'dark'}
       />
     </a>
   </div>

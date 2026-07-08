@@ -54,6 +54,19 @@
 @theme {
   --font-sans: 'PP Neue Montreal', system-ui, sans-serif;
   --font-heading: 'PP Neue Montreal', system-ui, sans-serif;
+
+  /* Marketing landing page palette. These generate the `bg-brand`, `text-ink`,
+     `text-muted`, `border-line`, … utilities used on the `/` landing page.
+     Type is PP Neue Montreal (the brand `font-sans` above). */
+  --color-brand: #7855ff; /* primary purple — the one accent (matches the widget primary) */
+  --color-brand-deep: #4a2fd4; /* deep purple — links */
+  --color-ink: #0a0a0a; /* black — titles, primary text, footer bg */
+  --color-line: #e4e8ea; /* hairline borders */
+  --color-gray-soft: #dbe1e6; /* dot grid, placeholders */
+  --color-surface-soft: #f5f6f7; /* card fills */
+  /* Faded black (`text-muted`) is fed via `--text-muted` on the `.lp` root in
+     Home.css, so it flows through the package's themed `--color-muted` mapping
+     instead of overriding it (which would recolour the widget's muted text). */
 }
 
 /* ── Existing landing-page styles ─────────────────────────────────────────── */
