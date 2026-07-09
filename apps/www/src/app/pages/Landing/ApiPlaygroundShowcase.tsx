@@ -4,7 +4,7 @@ import { ApiPlayground } from '@xendr/react'
 import { XendrLogo } from '@pkg/components/widget/XendrLogo'
 import { Icon, Tabs } from '@pkg/components/ui'
 import { DotGridCanvas } from '../../components/DotGridCanvas'
-import { EmbedPanel, Inspector } from './Inspector'
+import { Inspector } from './Inspector'
 import { usePlaygroundConfig } from './playground'
 import './Landing.css'
 
@@ -27,7 +27,7 @@ export function ApiPlaygroundShowcase({ embedded = false }: ApiPlaygroundShowcas
   // Chrome theme (canvas + inspector). Independent of the widget's own mode,
   // which the inspector controls separately.
   const [theme, setTheme] = useState<'light' | 'dark'>('dark')
-  // Mobile (<=1024px) shows one pane at a time via a Preview/Embed toggle.
+  // Mobile (<=1024px) shows one pane at a time via a Preview / Setup & Embed toggle.
   // Above 1024px both panes are always visible, so this is inert there.
   const [mobileView, setMobileView] = useState<'preview' | 'embed'>('preview')
 
@@ -83,14 +83,10 @@ export function ApiPlaygroundShowcase({ embedded = false }: ApiPlaygroundShowcas
           )}
         </div>
 
-        <Inspector cfg={cfg} className="max-[1024px]:hidden" />
-        <aside
-          className={`pg-inspector flex min-h-0 flex-col overflow-y-auto bg-surface min-[1025px]:hidden ${
-            mobileView === 'preview' ? 'max-[1024px]:hidden' : ''
-          }`}
-        >
-          <EmbedPanel code={cfg.code} iframeCode={cfg.iframeCode} onBack={() => setMobileView('preview')} />
-        </aside>
+        {/* One inspector for both breakpoints: always visible on desktop, and
+            on mobile it is the "Setup & Embed" pane (controls first, the embed
+            flow opens from its button). */}
+        <Inspector cfg={cfg} className={mobileView === 'preview' ? 'max-[1024px]:hidden' : ''} />
       </div>
 
       {/* Mobile-only pane switcher. Hidden from 1024px up. */}
@@ -99,7 +95,7 @@ export function ApiPlaygroundShowcase({ embedded = false }: ApiPlaygroundShowcas
           variant="segmented"
           items={[
             { id: 'preview', label: 'Preview' },
-            { id: 'embed', label: 'Embed' },
+            { id: 'embed', label: 'Setup & Embed' },
           ]}
           activeId={mobileView}
           onChange={(id) => setMobileView(id as 'preview' | 'embed')}
