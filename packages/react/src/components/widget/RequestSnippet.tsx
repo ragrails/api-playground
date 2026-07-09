@@ -102,13 +102,17 @@ export const RequestSnippet: React.FC<RequestSnippetProps> = ({
     <div className="w-full space-y-3">
       <Card>
         <div className="relative flex items-center justify-between gap-2">
-          <div className="hidden min-w-0 items-center gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:flex [&::-webkit-scrollbar]:hidden">
-            <Tabs
-              items={visibleItems}
-              activeId={visibleLanguages.includes(activeLanguage) ? activeLanguage : ''}
-              onChange={selectLanguage}
-              className="[&_button]:text-[13px]"
-            />
+          <div className="hidden min-w-0 items-center gap-2 sm:flex">
+            {/* Only the tabs scroll; the "More" select must stay outside the
+                overflow container or its dropdown gets clipped. */}
+            <div className="min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <Tabs
+                items={visibleItems}
+                activeId={visibleLanguages.includes(activeLanguage) ? activeLanguage : ''}
+                onChange={selectLanguage}
+                className="[&_button]:text-[13px]"
+              />
+            </div>
             {overflowLanguages.length > 0 && (
               <Select
                 value={moreValue}

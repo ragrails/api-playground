@@ -183,7 +183,7 @@ function Home() {
                 aria-hidden="true"
                 className="h-[19px] w-[19px] rounded-[4px]"
               />
-              <span className="text-[11px] font-medium uppercase tracking-[0.11em] text-ink">
+              <span className="text-xs font-medium uppercase tracking-[0.11em] text-ink">
                 Xendr at a glance
               </span>
             </div>
@@ -196,10 +196,10 @@ function Home() {
                       key={`${copy}-${i}`}
                       className="flex items-center gap-2.5 whitespace-nowrap border-r border-line px-6 py-[4px]"
                     >
-                      <span className="text-[11px] uppercase tracking-[0.1em] text-[#404042]">
+                      <span className="text-xs uppercase tracking-[0.1em] text-[#404042]">
                         {stat.label}
                       </span>
-                      <span className="inline-flex items-center rounded-[5px] bg-[#f2f4f5] px-[7px] text-[11px] font-medium text-ink">
+                      <span className="inline-flex items-center rounded-[5px] bg-[#f2f4f5] px-[7px] text-xs font-medium text-ink">
                         {stat.value}
                       </span>
                     </div>

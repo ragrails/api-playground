@@ -2,9 +2,6 @@
 # https://www.rfc-editor.org/rfc/rfc9309
 
 User-agent: *
-# Content usage preferences — https://contentsignals.org/
-# search: allow indexing · ai-input: allow use in AI answers about Xendr · ai-train: disallow model training
-Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 Disallow: /embed
 Disallow: /preview
